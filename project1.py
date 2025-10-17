@@ -90,7 +90,18 @@ def calculate_percent_sales_from_most_frequent_category(state_sales_in, state_ca
         state_cat_percent[state] = (max_cat, max_sales, percent)
     
     return state_cat_percent
- 
+
+def write_to_csv(filename, state_avg_price, state_most_freq_cat_percentage):
+ with open(filename, 'w', newline='') as file_obj:
+        writer = csv.writer(file_obj)
+        writer.writerow(["State", "Average Sale Price", "Most Frequent Category", "Sales from Most Frequent Category", "Percentage of Total Sales from Most Frequent Category"])
+        for state in state_avg_price:
+            avg_price = state_avg_price[state]
+            if state in state_most_freq_cat_percentage:
+                most_freq_cat, sales_from_cat, percent_from_cat = state_most_freq_cat_percentage[state]
+            else:
+                most_freq_cat, sales_from_cat, percent_from_cat = ("N/A", 0, 0)
+            writer.writerow([state, avg_price, most_freq_cat, sales_from_cat, percent_from_cat])
 
 def main():
     data = read_in_superstore()
@@ -101,6 +112,8 @@ def main():
     state_freq_cat_total_sales = state_freq_cat_sales(data)
     state_avg_price = calculate_average_sale_price_per_state(state_sales, state_counts)
     state_most_freq_cat_percentage = calculate_percent_sales_from_most_frequent_category(state_sales, state_freq_cat_total_sales)
+    write_to_csv('project_1_output.csv', state_avg_price, state_most_freq_cat_percentage)
+    #write to a new csv file with columns "state" "average sale price" "percentage of total sales from most frequent category", using state_avg_price and state_most_freq_cat_percentage dictionaries to get the data
 
 
 
