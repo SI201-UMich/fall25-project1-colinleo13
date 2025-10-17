@@ -19,6 +19,17 @@ def read_in_superstore():
 
 #average sale price per category
 
+#get total number of sales per state
+def get_num_sales_per_state(data):
+    state_counts = {}
+    for row in data[1:]:  # Skip header row
+        state = row[4]
+    #get quantity from row 10
+        quantity = int(row[10])
+        if state not in state_counts:
+            state_counts[state] = 0
+        state_counts[state] += quantity
+    return state_counts
 
 
 def total_sales_per_state(data):
@@ -30,6 +41,16 @@ def total_sales_per_state(data):
             state_sales[state] = 0
         state_sales[state] += sales
     return state_sales
+
+#get average sale price for each state by dividing total sales by number of sales
+def calculate_average_sale_price_per_state(state_sales_in, state_counts_in):
+    state_sales = state_sales_in
+    state_counts = state_counts_in
+    state_avg_price = {}
+    for state in state_sales:
+        avg_price = state_sales[state] / state_counts[state] if state_counts[state] > 0 else 0
+        state_avg_price[state] = avg_price
+    return state_avg_price
 
 
 def state_freq_cat_sales(data):
@@ -57,9 +78,9 @@ def state_freq_cat_sales(data):
     
     return state_cat_max
 
-def calculate_percent_sales_from_most_frequent_category(data):
-    state_sales = total_sales_per_state(data)
-    state_cat_max = state_freq_cat_sales(data)
+def calculate_percent_sales_from_most_frequent_category(state_sales_in, state_cat_max_in):
+    state_sales = state_sales_in
+    state_cat_max = state_cat_max_in
     
     state_cat_percent = {}
     for state in state_cat_max:
@@ -75,6 +96,13 @@ def main():
     data = read_in_superstore()
     percent_sales_most_freq = calculate_percent_sales_from_most_frequent_category(data)
     print(percent_sales_most_freq)
+    state_sales = total_sales_per_state(data)
+    state_counts = get_num_sales_per_state(data)
+    state_freq_cat_total_sales = state_freq_cat_sales(data)
+    state_avg_price = calculate_average_sale_price_per_state(state_sales, state_counts)
+    state_most_freq_cat_percentage = calculate_percent_sales_from_most_frequent_category(state_sales, state_freq_cat_total_sales)
+
+
 
 if __name__ == '__main__':
     main()
