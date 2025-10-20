@@ -110,7 +110,9 @@ def main():
     state_freq_cat_total_sales = state_freq_cat_sales(data)
     state_avg_price = calculate_average_sale_price_per_state(state_sales, state_counts)
     state_most_freq_cat_percentage = calculate_percent_sales_from_most_frequent_category(state_sales, state_freq_cat_total_sales)
-    write_to_csv('project_1_output.csv', state_avg_price, state_most_freq_cat_percentage)
+    base_path = os.path.dirname(__file__)
+    output_path = os.path.join(base_path, 'project_1_output.csv')
+    write_to_csv(output_path, state_avg_price, state_most_freq_cat_percentage)
     
 class TestSuperstoreCalculations(unittest.TestCase):
     header = [
