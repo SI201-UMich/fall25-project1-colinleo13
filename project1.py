@@ -49,7 +49,7 @@ def calculate_average_sale_price_per_state(state_sales_in, state_counts_in):
     state_counts = state_counts_in
     state_avg_price = {}
     for state in state_sales:
-        avg_price = state_sales[state] / state_counts[state] if state_counts[state] > 0 else 0
+        avg_price = state_sales[state] / state_counts.get(state, 0) if state_counts.get(state, 0) > 0 else 0
         state_avg_price[state] = round(avg_price, 3)
     return state_avg_price
 
@@ -86,7 +86,7 @@ def calculate_percent_sales_from_most_frequent_category(state_sales_in, state_ca
     state_cat_percent = {}
     for state in state_cat_max:
         max_cat, max_sales = state_cat_max[state]
-        total_sales = state_sales[state]
+        total_sales = state_sales.get(state, 0.0)
         percent = (max_sales / total_sales) * 100 if total_sales > 0 else 0
         state_cat_percent[state] = (max_cat, round(max_sales, 3), round(percent, 3))
     
@@ -116,40 +116,160 @@ def main():
 
 #Write 4 simple test cases for each function above using the unit test framework. Each function should have two tests for general/usua cases, and two edge cases.
 class TestSuperstoreCalculations(unittest.TestCase):
-#Write 4 simple test cases for each function above using the unit test framework. Each function should have two tests for general/usua cases, and two edge cases. The sample data that you use should follow the schema of the SampleSuper.csv file.
-    data = [
-            ["Order ID", "Order Date", "Ship Date", "Ship Mode", "State", "Country", "City", "Category", "Sub-Category", "Sales", "Quantity"],
-            ["CA-2016-152156", "11/8/16", "11/11/16", "Second Class", "California", "United States", "Los Angeles", "Furniture", "Bookcases", "261.96", "2"],
-            ["CA-2016-152157", "11/8/16", "11/11/16", "Second Class", "California", "United States", "Los Angeles", "Office Supplies", "Labels", "14.62", "3"],
-            ["NY-2016-152158", "11/8/16", "11/11/16", "Second Class", "New York", "United States", "New York City", "Technology", "Phones", "957.58", "5"]
-        ]
-    def test_get_num_sales_per_state(self):
+    header = [
+        "Order ID", "Order Date", "Ship Date", "Ship Mode",
+        "State", "Country", "City", "Category", "Sub-Category",
+        "Sales", "Quantity"
+    ]
+    data = [header,
+        ["CA-2016-152156", "11/08/16", "11/11/16", "Second Class", "California", "United States", "Los Angeles", "Furniture",        "Bookcases",      "261.96", "2"],
+        ["CA-2016-152157", "11/08/16", "11/11/16", "Second Class", "California", "United States", "Los Angeles", "Office Supplies",  "Labels",         "14.62",  "3"],
+        ["TX-2017-100001", "12/02/17", "12/05/17", "Standard Class","Texas",     "United States", "Houston",     "Technology",       "Phones",         "100.00", "1"],
+        ["TX-2017-100002", "12/02/17", "12/05/17", "Standard Class","Texas",     "United States", "Houston",     "Office Supplies",  "Paper",          "50.00",  "4"],
+        ["NY-2016-152158", "11/08/16", "11/11/16", "Second Class",  "New York",  "United States", "New York City","Technology",      "Phones",         "957.58", "5"],
+    ]
+
+    data_header_only = [header]
+
+    data_all_zero = [header,
+     ["NV-2018-200001", "03/14/18", "03/17/18", "First Class", "Nevada", "United States", "Reno", "Furniture",  "Tables",      "0", "0"],
+     ["NV-2018-200002", "03/14/18", "03/17/18", "First Class", "Nevada", "United States", "Reno", "Technology", "Accessories", "0", "0"],
+    ]
+
+    data_tie = [header, 
+        ["GA-2020-600001", "02/18/20", "02/21/20", "Second Class", "Georgia", "United States", "Atlanta", "Furniture",  "Tables", "60", "1"],
+        ["GA-2020-600002", "02/18/20", "02/21/20", "Second Class", "Georgia", "United States", "Atlanta", "Technology", "Phones", "60", "1"],
+    ]       
+
+    # ---------------- get_num_sales_per_state ----------------
+    # General 1: full base data
+    def test_get_num_sales_per_state_general(self):
         result = get_num_sales_per_state(self.data)
-        expected = {"California": 5, "New York": 5}
-        self.assertEqual(result, expected)
-    def test_total_sales_per_state(self):
+        self.assertEqual(result, {"California": 5, "Texas": 5, "New York": 5})
+
+    # General 2: subset using only CA + TX rows (reused data, no new rows)
+    def test_get_num_sales_per_state_general_subset(self):
+        subset = [self.header] + self.data[1:5]  # CA rows + TX rows
+        result = get_num_sales_per_state(subset)
+        self.assertEqual(result, {"California": 5, "Texas": 5})
+
+    # Edge 1: header only
+    def test_get_num_sales_per_state_header_only(self):
+        self.assertEqual(get_num_sales_per_state(self.data_header_only), {})
+
+    # Edge 2: all zero quantities
+    def test_get_num_sales_per_state_all_zero(self):
+        self.assertEqual(get_num_sales_per_state(self.data_all_zero), {"Nevada": 0})
+
+    # ---------------- total_sales_per_state ----------------
+    # General 1: full base data
+    def test_total_sales_per_state_general(self):
         result = total_sales_per_state(self.data)
-        expected = {"California": 276.58, "New York": 957.58}
-        self.assertEqual(result, expected)
-    def test_calculate_average_sale_price_per_state(self):
-        state_sales = {"California": 276.58, "New York": 957.58}
-        state_counts = {"California": 5, "New York": 5}
+        self.assertEqual(result, {"California": 276.58, "Texas": 150.00, "New York": 957.58})
+
+    # General 2: subset using only CA + TX rows (reused data)
+    def test_total_sales_per_state_general_subset(self):
+        subset = [self.header] + self.data[1:5]  # CA rows + TX rows
+        result = total_sales_per_state(subset)
+        self.assertEqual(result, {"California": 276.58, "Texas": 150.00})
+
+    # Edge 1: header only
+    def test_total_sales_per_state_header_only(self):
+        self.assertEqual(total_sales_per_state(self.data_header_only), {})
+
+    # Edge 2: all zero sales
+    def test_total_sales_per_state_all_zero(self):
+        self.assertEqual(total_sales_per_state(self.data_all_zero), {"Nevada": 0.0})
+
+    # ---------------- calculate_average_sale_price_per_state ----------------
+    # General 1: from full base data
+    def test_calculate_average_sale_price_per_state_general(self):
+        state_sales = total_sales_per_state(self.data)
+        state_counts = get_num_sales_per_state(self.data)
         result = calculate_average_sale_price_per_state(state_sales, state_counts)
-        expected = {"California": 55.316, "New York": 191.516}
-        self.assertEqual(result, expected)
-    def test_state_freq_cat_sales(self):
+        self.assertEqual(result, {"California": 55.316, "Texas": 30.0, "New York": 191.516})
+
+    # General 2: subset CA + TX (reused data)
+    def test_calculate_average_sale_price_per_state_general_subset(self):
+        subset = [self.header] + self.data[1:5]  # CA rows + TX rows
+        sales = total_sales_per_state(subset)
+        counts = get_num_sales_per_state(subset)
+        result = calculate_average_sale_price_per_state(sales, counts)
+        self.assertEqual(result, {"California": 55.316, "Texas": 30.0})
+
+    # Edge 1: zero count for a state (force TX to 0)
+    def test_calculate_average_sale_price_per_state_zero_count(self):
+        sales = total_sales_per_state(self.data)
+        counts = get_num_sales_per_state(self.data)
+        counts["Texas"] = 0
+        result = calculate_average_sale_price_per_state(sales, counts)
+        self.assertEqual(result["Texas"], 0)
+
+    # Edge 2: missing count key -> graceful default 0
+    def test_calculate_average_sale_price_per_state_missing_key(self):
+        sales = {"Oregon": 12.0}
+        counts = {}  # missing key
+        result = calculate_average_sale_price_per_state(sales, counts)
+        self.assertEqual(result, {"Oregon": 0})
+
+    # ---------------- state_freq_cat_sales ----------------
+    # General 1: full base data
+    def test_state_freq_cat_sales_general(self):
         result = state_freq_cat_sales(self.data)
-        expected = {"California": ("Furniture", 261.96), "New York": ("Technology", 957.58)}
-        self.assertEqual(result, expected)
-    def test_calculate_percent_sales_from_most_frequent_category(self):
-        state_sales = {"California": 276.58, "New York": 957.58}
-        state_cat_max = {"California": ("Furniture", 261.96), "New York": ("Technology", 957.58)}
-        result = calculate_percent_sales_from_most_frequent_category(state_sales, state_cat_max)
-        expected = {"California": ("Furniture", 261.96, 94.714), "New York": ("Technology", 957.58, 100.0)}
-        self.assertEqual(result, expected)
+        self.assertEqual(
+            result,
+            {"California": ("Furniture", 261.96), "Texas": ("Technology", 100.0), "New York": ("Technology", 957.58)}
+        )
 
+    # General 2: subset TX-only (reused rows)
+    def test_state_freq_cat_sales_general_subset(self):
+        subset_tx = [self.header] + self.data[3:5]  # the two TX rows only
+        result = state_freq_cat_sales(subset_tx)
+        self.assertEqual(result, {"Texas": ("Technology", 100.0)})
 
+    # Edge 1: tie case (keeps first encountered)
+    def test_state_freq_cat_sales_tie_first_encountered(self):
+        self.assertEqual(state_freq_cat_sales(self.data_tie), {"Georgia": ("Furniture", 60.0)})
 
+    # Edge 2: header only
+    def test_state_freq_cat_sales_header_only(self):
+        self.assertEqual(state_freq_cat_sales(self.data_header_only), {})
+
+    # ---------------- calculate_percent_sales_from_most_frequent_category ----------------
+    # General 1: from full base data
+    def test_calculate_percent_sales_from_most_frequent_category_general(self):
+        totals = total_sales_per_state(self.data)
+        max_cat = state_freq_cat_sales(self.data)
+        result = calculate_percent_sales_from_most_frequent_category(totals, max_cat)
+        self.assertEqual(result["California"], ("Furniture", 261.96, 94.714))
+        self.assertEqual(result["Texas"], ("Technology", 100.0, 66.667))
+        self.assertEqual(result["New York"], ("Technology", 957.58, 100.0))
+
+    # General 2: subset TX-only (reused rows)
+    def test_calculate_percent_sales_from_most_frequent_category_general_subset(self):
+        subset_tx = [self.header] + self.data[3:5]
+        totals = total_sales_per_state(subset_tx)          # {"Texas": 150.0}
+        max_cat = state_freq_cat_sales(subset_tx)          # {"Texas": ("Technology", 100.0)}
+        result = calculate_percent_sales_from_most_frequent_category(totals, max_cat)
+        self.assertEqual(result, {"Texas": ("Technology", 100.0, 66.667)})
+
+    # Edge 1: zero total -> 0%
+    def test_calculate_percent_sales_from_most_frequent_category_zero_total(self):
+        totals = {"Nevada": 0.0}
+        max_cat = {"Nevada": ("Technology", 0.0)}
+        self.assertEqual(
+            calculate_percent_sales_from_most_frequent_category(totals, max_cat),
+            {"Nevada": ("Technology", 0.0, 0)}
+        )
+
+    # Edge 2: missing total key -> graceful 0%
+    def test_calculate_percent_sales_from_most_frequent_category_missing_total(self):
+        totals = {}
+        max_cat = {"Oregon": ("Furniture", 10.0)}
+        self.assertEqual(
+            calculate_percent_sales_from_most_frequent_category(totals, max_cat),
+            {"Oregon": ("Furniture", 10.0, 0)}
+        )
 
 if __name__ == '__main__':
     main()
