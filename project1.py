@@ -1,3 +1,11 @@
+# author Colin Leonard
+# umid 2262 5134
+# colinleo@umich.edu
+#assignment: Project 1
+#All functions below written by Colin Leonard
+#AI use: Used ChatGPT to help debug an error with the file writing location, used ChatGPT for ideas for different test cases.
+
+
 import os
 import csv
 import unittest
