@@ -10,12 +10,6 @@ import os
 import csv
 import unittest
 def read_in_superstore(filename='SampleSuperstore.csv'):
-    """
-    Reads in the 'superstore.csv' file and returns its contents as a list of lists.
-    
-    Returns:
-        list: A list of lists, where each inner list represents a row from the CSV file.
-    """
     base_path = os.path.dirname(__file__)
     full_path = os.path.join(base_path, filename)
     
@@ -25,14 +19,10 @@ def read_in_superstore(filename='SampleSuperstore.csv'):
     
     return data
 
-#average sale price per category
-
-#get total number of sales per state
 def get_num_sales_per_state(data):
     state_counts = {}
-    for row in data[1:]:  # Skip header row
+    for row in data[1:]:  
         state = row[4]
-    #get quantity from row 10
         quantity = int(row[10])
         if state not in state_counts:
             state_counts[state] = 0
@@ -42,7 +32,7 @@ def get_num_sales_per_state(data):
 
 def total_sales_per_state(data):
     state_sales = {}
-    for row in data[1:]:  # Skip header row
+    for row in data[1:]:  
         state = row[4]
         sales = float(row[9])
         if state not in state_sales:
@@ -50,7 +40,6 @@ def total_sales_per_state(data):
         state_sales[state] += sales
     return state_sales
 
-#get average sale price for each state by dividing total sales by number of sales
 def calculate_average_sale_price_per_state(state_sales_in, state_counts_in):
     state_sales = state_sales_in
     state_counts = state_counts_in
@@ -121,71 +110,64 @@ def main():
     base_path = os.path.dirname(__file__)
     output_path = os.path.join(base_path, 'project_1_output.csv')
     write_to_csv(output_path, state_avg_price, state_most_freq_cat_percentage)
+    print(data[0])
     
 class TestSuperstoreCalculations(unittest.TestCase):
     header = [
-        "Order ID", "Order Date", "Ship Date", "Ship Mode",
-        "State", "Country", "City", "Category", "Sub-Category",
-        "Sales", "Quantity"
+        "Ship Mode", "Segment", "Country", "City", "State", "Postal Code", "Region",
+        "Category", "Sub-Category", "Sales", "Quantity", "Discount", "Profit"
     ]
+
     data = [header,
-        ["CA-2016-152156", "11/08/16", "11/11/16", "Second Class", "California", "United States", "Los Angeles", "Furniture",        "Bookcases",      "261.96", "2"],
-        ["CA-2016-152157", "11/08/16", "11/11/16", "Second Class", "California", "United States", "Los Angeles", "Office Supplies",  "Labels",         "14.62",  "3"],
-        ["TX-2017-100001", "12/02/17", "12/05/17", "Standard Class","Texas",     "United States", "Houston",     "Technology",       "Phones",         "100.00", "1"],
-        ["TX-2017-100002", "12/02/17", "12/05/17", "Standard Class","Texas",     "United States", "Houston",     "Office Supplies",  "Paper",          "50.00",  "4"],
-        ["NY-2016-152158", "11/08/16", "11/11/16", "Second Class",  "New York",  "United States", "New York City","Technology",      "Phones",         "957.58", "5"],
+        ["Second Class", "Consumer",  "United States", "Los Angeles",   "California", "90036", "West",    "Furniture",       "Bookcases",  "261.96", "2", "0.00", "41.913"],
+        ["Second Class", "Consumer",  "United States", "Los Angeles",   "California", "90036", "West",    "Office Supplies", "Labels",     "14.62",  "3", "0.00", "6.871"],
+        ["Standard Class","Corporate","United States", "Houston",       "Texas",      "77041", "Central", "Technology",      "Phones",     "100.00", "1", "0.10", "9.000"],
+        ["Standard Class","Corporate","United States", "Houston",       "Texas",      "77041", "Central", "Office Supplies", "Paper",      "50.00",  "4", "0.20", "3.000"],
+        ["Second Class", "Consumer",  "United States", "New York City", "New York",   "10024", "East",    "Technology",      "Phones",     "957.58", "5", "0.00", "200.00"],
     ]
 
     data_header_only = [header]
 
     data_all_zero = [header,
-     ["NV-2018-200001", "03/14/18", "03/17/18", "First Class", "Nevada", "United States", "Reno", "Furniture",  "Tables",      "0", "0"],
-     ["NV-2018-200002", "03/14/18", "03/17/18", "First Class", "Nevada", "United States", "Reno", "Technology", "Accessories", "0", "0"],
+        ["First Class", "Consumer",  "United States", "Reno",      "Nevada",  "89501", "West", "Furniture",  "Tables",      "0", "0", "0.00", "0.00"],
+        ["First Class", "Consumer",  "United States", "Reno",      "Nevada",  "89501", "West", "Technology", "Accessories", "0", "0", "0.00", "0.00"],
     ]
 
-    data_tie = [header, 
-        ["GA-2020-600001", "02/18/20", "02/21/20", "Second Class", "Georgia", "United States", "Atlanta", "Furniture",  "Tables", "60", "1"],
-        ["GA-2020-600002", "02/18/20", "02/21/20", "Second Class", "Georgia", "United States", "Atlanta", "Technology", "Phones", "60", "1"],
-    ]       
+    data_tie = [header,
+        ["Second Class", "Consumer",  "United States", "Atlanta", "Georgia", "30303", "South", "Furniture",  "Tables", "60", "1", "0.00", "5.00"],
+        ["Second Class", "Consumer",  "United States", "Atlanta", "Georgia", "30303", "South", "Technology", "Phones",  "60", "1", "0.00", "8.00"],
+    ]
 
-  
     def test_get_num_sales_per_state_general(self):
         result = get_num_sales_per_state(self.data)
         self.assertEqual(result, {"California": 5, "Texas": 5, "New York": 5})
-
 
     def test_get_num_sales_per_state_general_subset(self):
         subset = [self.header] + self.data[1:5]  
         result = get_num_sales_per_state(subset)
         self.assertEqual(result, {"California": 5, "Texas": 5})
 
-
     def test_get_num_sales_per_state_header_only(self):
         self.assertEqual(get_num_sales_per_state(self.data_header_only), {})
-
 
     def test_get_num_sales_per_state_all_zero(self):
         self.assertEqual(get_num_sales_per_state(self.data_all_zero), {"Nevada": 0})
 
-
     def test_total_sales_per_state_general(self):
         result = total_sales_per_state(self.data)
+
         self.assertEqual(result, {"California": 276.58, "Texas": 150.00, "New York": 957.58})
 
-   
     def test_total_sales_per_state_general_subset(self):
-        subset = [self.header] + self.data[1:5]  
+        subset = [self.header] + self.data[1:5]
         result = total_sales_per_state(subset)
         self.assertEqual(result, {"California": 276.58, "Texas": 150.00})
-
 
     def test_total_sales_per_state_header_only(self):
         self.assertEqual(total_sales_per_state(self.data_header_only), {})
 
-
     def test_total_sales_per_state_all_zero(self):
         self.assertEqual(total_sales_per_state(self.data_all_zero), {"Nevada": 0.0})
-
 
     def test_calculate_average_sale_price_per_state_general(self):
         state_sales = total_sales_per_state(self.data)
@@ -193,9 +175,8 @@ class TestSuperstoreCalculations(unittest.TestCase):
         result = calculate_average_sale_price_per_state(state_sales, state_counts)
         self.assertEqual(result, {"California": 55.316, "Texas": 30.0, "New York": 191.516})
 
-
     def test_calculate_average_sale_price_per_state_general_subset(self):
-        subset = [self.header] + self.data[1:5]  
+        subset = [self.header] + self.data[1:5]
         sales = total_sales_per_state(subset)
         counts = get_num_sales_per_state(subset)
         result = calculate_average_sale_price_per_state(sales, counts)
@@ -208,13 +189,11 @@ class TestSuperstoreCalculations(unittest.TestCase):
         result = calculate_average_sale_price_per_state(sales, counts)
         self.assertEqual(result["Texas"], 0)
 
-
     def test_calculate_average_sale_price_per_state_missing_key(self):
         sales = {"Oregon": 12.0}
         counts = {}  
         result = calculate_average_sale_price_per_state(sales, counts)
         self.assertEqual(result, {"Oregon": 0})
-
 
     def test_state_freq_cat_sales_general(self):
         result = state_freq_cat_sales(self.data)
@@ -222,7 +201,6 @@ class TestSuperstoreCalculations(unittest.TestCase):
             result,
             {"California": ("Furniture", 261.96), "Texas": ("Technology", 100.0), "New York": ("Technology", 957.58)}
         )
-
 
     def test_state_freq_cat_sales_general_subset(self):
         subset_tx = [self.header] + self.data[3:5]  
@@ -232,11 +210,9 @@ class TestSuperstoreCalculations(unittest.TestCase):
     def test_state_freq_cat_sales_tie_first_encountered(self):
         self.assertEqual(state_freq_cat_sales(self.data_tie), {"Georgia": ("Furniture", 60.0)})
 
-
     def test_state_freq_cat_sales_header_only(self):
         self.assertEqual(state_freq_cat_sales(self.data_header_only), {})
 
- 
     def test_calculate_percent_sales_from_most_frequent_category_general(self):
         totals = total_sales_per_state(self.data)
         max_cat = state_freq_cat_sales(self.data)
@@ -245,14 +221,12 @@ class TestSuperstoreCalculations(unittest.TestCase):
         self.assertEqual(result["Texas"], ("Technology", 100.0, 66.667))
         self.assertEqual(result["New York"], ("Technology", 957.58, 100.0))
 
-
     def test_calculate_percent_sales_from_most_frequent_category_general_subset(self):
         subset_tx = [self.header] + self.data[3:5]
-        totals = total_sales_per_state(subset_tx)          
-        max_cat = state_freq_cat_sales(subset_tx)          
+        totals = total_sales_per_state(subset_tx)
+        max_cat = state_freq_cat_sales(subset_tx)
         result = calculate_percent_sales_from_most_frequent_category(totals, max_cat)
         self.assertEqual(result, {"Texas": ("Technology", 100.0, 66.667)})
-
 
     def test_calculate_percent_sales_from_most_frequent_category_zero_total(self):
         totals = {"Nevada": 0.0}
@@ -270,6 +244,67 @@ class TestSuperstoreCalculations(unittest.TestCase):
             {"Oregon": ("Furniture", 10.0, 0)}
         )
 
-if __name__ == '__main__':
+    def test_read_in_superstore_file_exists(self): 
+        data = read_in_superstore() 
+        self.assertGreater(len(data), 0) 
+    def test_read_in_superstore_header(self): 
+        data = read_in_superstore() 
+        expected_header = [ "Ship Mode", "Segment", "Country", "City", "State", "Postal Code", "Region",
+        "Category", "Sub-Category", "Sales", "Quantity", "Discount", "Profit"] 
+        self.assertEqual(data[0], expected_header)
+
+    def test_read_in_superstore_empty_file(self):
+        data = read_in_superstore("testfile.csv")
+        self.assertEqual(data, [])
+    
+    def test_read_in_superstore_whitespace_only(self):
+        data = read_in_superstore("testfile.csv")
+        self.assertEqual(data, [])
+
+    def test_write_to_csv_general_single(self):
+        filename = "test_output.csv"
+        state_avg = {"California": 55.316}
+        state_freq = {"California": ("Furniture", 261.96, 94.714)}
+        write_to_csv(filename, state_avg, state_freq)
+        with open(filename, newline="") as f:
+            rows = list(csv.reader(f))
+        self.assertEqual(rows[0], [
+            "State", "Average Sale Price", "Most Frequent Category",
+            "Sales from Most Frequent Category", "Percentage of Total Sales from Most Frequent Category"
+        ])
+        self.assertEqual(rows[1], ["California", "55.316", "Furniture", "261.96", "94.714"])
+        os.remove(filename)
+
+    def test_write_to_csv_general_multiple(self):
+        filename = "test_output.csv"
+        state_avg = {"California": 55.316, "Texas": 30.0}
+        state_freq = {"California": ("Furniture", 261.96, 94.714), "Texas": ("Technology", 100.0, 66.667)}
+        write_to_csv(filename, state_avg, state_freq)
+        with open(filename, newline="") as f:
+            body = {r[0]: r for r in list(csv.reader(f))[1:]}
+        self.assertEqual(body["California"], ["California", "55.316", "Furniture", "261.96", "94.714"])
+        self.assertEqual(body["Texas"],      ["Texas",      "30.0",   "Technology","100.0",  "66.667"])
+        os.remove(filename)
+
+    def test_write_to_csv_edge_empty_averages(self):
+        filename = "test_output.csv"
+        write_to_csv(filename, {}, {})
+        with open(filename, newline="") as f:
+            rows = list(csv.reader(f))
+        self.assertEqual(len(rows), 1)  
+        os.remove(filename)
+
+    def test_write_to_csv_edge_missing_freq_defaults(self):
+        filename = "test_output.csv"
+        state_avg = {"California": 10.0, "Texas": 20.0}  
+        state_freq = {"California": ("Tech", 5.0, 50.0)}
+        write_to_csv(filename, state_avg, state_freq)
+        with open(filename, newline="") as f:
+            body = {r[0]: r for r in list(csv.reader(f))[1:]}
+        self.assertEqual(body["California"], ["California", "10.0", "Tech", "5.0", "50.0"])
+        self.assertEqual(body["Texas"],      ["Texas",      "20.0", "N/A",  "0",   "0"])
+        os.remove(filename)
+
+if __name__ == "__main__":
     main()
     unittest.main(verbosity=2)
