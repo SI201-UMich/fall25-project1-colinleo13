@@ -51,9 +51,8 @@ def calculate_average_sale_price_per_state(state_sales_in, state_counts_in):
 
 
 def state_freq_cat_sales(data):
-#most frequent category per state with total sales from that category for that state
     state_cat = {}
-    for row in data[1:]:  # Skip header row
+    for row in data[1:]: 
         state = row[4]
         category = row[7]
         sales = float(row[9])
